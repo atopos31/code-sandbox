@@ -16,13 +16,13 @@ type SandboxPool struct {
 func NewSandboxPool(maxSize int) *SandboxPool {
 	s := &SandboxPool{
 		sandboxes: make(map[int]*Sandbox),
-		maxSize: maxSize,
+		maxSize:   maxSize,
 	}
 	s.cond = sync.NewCond(&s.mu)
 	return s
 }
 
-func (s *SandboxPool) GetSandbox() (*Sandbox,error) {
+func (s *SandboxPool) GetSandbox() (*Sandbox, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -43,7 +43,7 @@ func (s *SandboxPool) GetSandbox() (*Sandbox,error) {
 	return nil, errors.New("no sandbox available")
 }
 
-func (s *SandboxPool) ReleaseSandbox(sandbox *Sandbox)  {
+func (s *SandboxPool) ReleaseSandbox(sandbox *Sandbox) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

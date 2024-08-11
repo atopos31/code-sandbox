@@ -8,7 +8,6 @@ import (
 	"github.com/atopos31/code-sandbox/internal/sandbox"
 )
 
-
 func TestPy(t *testing.T) {
 	var SandBoxPool = sandbox.NewSandboxPool(10)
 	sandbox, err := SandBoxPool.GetSandbox()
@@ -17,7 +16,8 @@ func TestPy(t *testing.T) {
 	}
 	defer SandBoxPool.ReleaseSandbox(sandbox)
 
-	coder := coder.NewPythonCoder(sandbox)
+	coder := coder.NewPythonCoder()
+	coder.SetSandbox(sandbox)
 	defer coder.Clean()
 	code, err := os.ReadFile("../testcode/test.py.txt")
 	if err != nil {
@@ -30,7 +30,7 @@ func TestPy(t *testing.T) {
 	if meta.Status != "" {
 		t.Fatal(meta)
 	}
-	meta, err = coder.Run(1, 1000000, "")
+	meta, err = coder.Run(1, 1000000, "2222 5")
 	if err != nil {
 		t.Fatal(err)
 	}

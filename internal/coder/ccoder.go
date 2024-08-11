@@ -5,8 +5,8 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/atopos31/code-sandbox/internal/model"
 	"github.com/atopos31/code-sandbox/internal/sandbox"
+	"github.com/atopos31/code-sandbox/pkg/model"
 	"github.com/google/uuid"
 )
 
@@ -21,13 +21,12 @@ type CCoder struct {
 	stdoutPath   string
 }
 
-func NewCCoder(sanbox *sandbox.Sandbox) *CCoder {
+func NewCCoder() Coder {
 	uuid := uuid.NewString()
 	basePath := fmt.Sprintf("%s/%s", CodeStorageFolder, uuid)
 	os.Mkdir(basePath, 0777)
 	os.Chmod(basePath, 0777)
 	return &CCoder{
-		sandbox:      sanbox,
 		basefielPath: basePath,
 		binPath:      fmt.Sprintf("%s/build", basePath),
 		buildPath:    fmt.Sprintf("%s/build.c", basePath),
@@ -36,6 +35,10 @@ func NewCCoder(sanbox *sandbox.Sandbox) *CCoder {
 		stderrPath:   fmt.Sprintf("%s/stderr.txt", basePath),
 		stdoutPath:   fmt.Sprintf("%s/stdout.txt", basePath),
 	}
+}
+
+func (c *CCoder) SetSandbox(sandbox *sandbox.Sandbox) {
+	c.sandbox = sandbox
 }
 
 func (c *CCoder) Build(code string) (*model.CodeMETA, error) {

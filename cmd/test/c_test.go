@@ -16,7 +16,8 @@ func TestC(t *testing.T) {
 	}
 	defer SandBoxPool.ReleaseSandbox(sandbox)
 
-	coder := coder.NewCCoder(sandbox)
+	coder := coder.NewCCoder()
+	coder.SetSandbox(sandbox)
 	defer coder.Clean()
 	code, err := os.ReadFile("../testcode/test.c.txt")
 	if err != nil {

@@ -8,6 +8,20 @@ import (
 	"strings"
 )
 
+type CodeRequest struct {
+	Code     string   `json:"code" binding:"required"`
+	Language string   `json:"language" binding:"oneof=go c cpp java python"`
+	MaxTime  float64  `json:"max_time" binding:"required"`
+	MaxMem   int      `json:"max_mem" binding:"required"`
+	Stdin    []string `json:"stdin"`
+}
+
+type CodeResponse struct {
+	Code int         `json:"code"`
+	Msg  string      `json:"message"`
+	Meta []*CodeMETA `json:"meta"`
+}
+
 type CodeMETA struct {
 	Time     float64 `json:"time"      metric:"time"`
 	TimeWall float64 `json:"time_wall" metric:"time-wall"`

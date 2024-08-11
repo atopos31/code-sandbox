@@ -16,7 +16,8 @@ func TestGO(t *testing.T) {
 	}
 	defer SandBoxPool.ReleaseSandbox(sandbox)
 
-	coder := coder.NewGOCoder(sandbox)
+	coder := coder.NewGOCoder()
+	coder.SetSandbox(sandbox)
 	defer coder.Clean()
 	code, err := os.ReadFile("../testcode/test.go.txt")
 	if err != nil {

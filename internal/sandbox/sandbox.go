@@ -6,7 +6,7 @@ import (
 )
 
 type Sandbox struct {
-	ID    int
+	ID int
 }
 
 func newSandbox(id int) (*Sandbox, error) {

@@ -5,8 +5,8 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/atopos31/code-sandbox/internal/model"
 	"github.com/atopos31/code-sandbox/internal/sandbox"
+	"github.com/atopos31/code-sandbox/pkg/model"
 	"github.com/google/uuid"
 )
 
@@ -21,13 +21,12 @@ type GOCoder struct {
 	stdoutPath   string
 }
 
-func NewGOCoder(sanbox *sandbox.Sandbox) *GOCoder {
+func NewGOCoder() Coder {
 	uuid := uuid.NewString()
 	basePath := fmt.Sprintf("%s/%s", CodeStorageFolder, uuid)
 	os.Mkdir(basePath, 0777)
 	os.Chmod(basePath, 0777)
 	return &GOCoder{
-		sandbox:      sanbox,
 		basefielPath: basePath,
 		binPath:      fmt.Sprintf("%s/build", basePath),
 		buildPath:    fmt.Sprintf("%s/build.go", basePath),
@@ -36,6 +35,10 @@ func NewGOCoder(sanbox *sandbox.Sandbox) *GOCoder {
 		stderrPath:   fmt.Sprintf("%s/stderr.txt", basePath),
 		stdoutPath:   fmt.Sprintf("%s/stdout.txt", basePath),
 	}
+}
+
+func (g *GOCoder) SetSandbox(sandbox *sandbox.Sandbox) {
+	g.sandbox = sandbox
 }
 
 func (g *GOCoder) Build(code string) (*model.CodeMETA, error) {
@@ -102,4 +105,3 @@ func (g *GOCoder) Run(MaxTime float64, MaxMem int, stdin string) (*model.CodeMET
 func (g *GOCoder) Clean() {
 	os.RemoveAll(g.basefielPath)
 }
-

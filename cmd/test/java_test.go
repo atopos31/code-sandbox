@@ -8,7 +8,6 @@ import (
 	"github.com/atopos31/code-sandbox/internal/sandbox"
 )
 
-
 func TestJava(t *testing.T) {
 	var SandBoxPool = sandbox.NewSandboxPool(10)
 	sandbox, err := SandBoxPool.GetSandbox()
@@ -17,7 +16,8 @@ func TestJava(t *testing.T) {
 	}
 	defer SandBoxPool.ReleaseSandbox(sandbox)
 
-	coder := coder.NewJavaCoder(sandbox)
+	coder := coder.NewJavaCoder()
+	coder.SetSandbox(sandbox)
 	defer coder.Clean()
 	code, err := os.ReadFile("../testcode/test.java.txt")
 	if err != nil {
