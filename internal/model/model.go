@@ -15,15 +15,16 @@ type CodeMETA struct {
 	Killed   bool    `json:"killed"    metric:"killed"`
 	Message  string  `json:"message"   metric:"message"`
 	Status   string  `json:"status"    metric:"status"`
+	Exitsig  int     `json:"exitsig"   metric:"exitsig"`
 	Stderr   string  `json:"stderr"`
 	StdOut   string  `json:"stdout"`
 }
 
-func NewCodeMETA(stderrPath string,stdoutPath string,metaPath string) *CodeMETA {
+func NewCodeMETA(stderrPath string, stdoutPath string, metaPath string) *CodeMETA {
 	codeMETA := new(CodeMETA)
 	if err := codeMETA.SetStderrFrompath(stderrPath); err != nil {
 		return nil
-	}	
+	}
 	if err := codeMETA.SetStdOutFrompath(stdoutPath); err != nil {
 		return nil
 	}
@@ -34,7 +35,7 @@ func NewCodeMETA(stderrPath string,stdoutPath string,metaPath string) *CodeMETA 
 }
 
 func (c *CodeMETA) SetStderrFrompath(filepath string) error {
-	data,err  := os.ReadFile(filepath)
+	data, err := os.ReadFile(filepath)
 	if err != nil {
 		return err
 	}
@@ -43,11 +44,23 @@ func (c *CodeMETA) SetStderrFrompath(filepath string) error {
 }
 
 func (c *CodeMETA) SetStdOutFrompath(filepath string) error {
-	data,err  := os.ReadFile(filepath)
+	data, err := os.Open(filepath)
+	defer data.Close()
 	if err != nil {
 		return err
 	}
-	c.StdOut = string(data)
+	var lines []string
+	scanner := bufio.NewScanner(data)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+
+	// 检查扫描器是否遇到错误
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	c.StdOut = strings.Join(lines, "\n")
+
 	return nil
 }
 

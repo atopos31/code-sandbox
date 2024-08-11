@@ -19,15 +19,25 @@ func main() {
 	coder := coder.NewCPPCoder(sanboxi)
 	defer coder.Clean()
 
-	meta, err := coder.Build(`#include <iostream>
-using namespace std
+	buildMeta, err := coder.Build(`#include <iostream>
+using namespace std;
 
 int main() {
-    cout<<"test"<<endl;
+	int a,b;
+	cin>>a>>b;
+    cout<<a+b<<endl;
 }
 `)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(meta)
+	if buildMeta.Status != "" {
+		fmt.Println("buildMeta", buildMeta)
+		panic(buildMeta)
+	}
+	runMeta, err := coder.Run(1, 10000, " 111 9")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("runMeta", runMeta)
 }
