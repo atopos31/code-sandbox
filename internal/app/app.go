@@ -1,7 +1,9 @@
 package app
 
 import (
-	"github.com/atopos31/code-sandbox/internal/coder"
+	"fmt"
+
+	"github.com/atopos31/code-sandbox/internal/newcoder"
 	"github.com/atopos31/code-sandbox/internal/sandbox"
 	"github.com/atopos31/code-sandbox/pkg/model"
 	"github.com/gin-gonic/gin"
@@ -9,18 +11,18 @@ import (
 
 type App struct {
 	sandboxPool *sandbox.SandboxPool
-	coders      map[string]func() coder.Coder
+	coders      map[string]newcoder.NewCoderFunc
 	server      *gin.Engine
 }
 
 func New(*sandbox.SandboxPool) *App {
 	server := gin.Default()
-	coders := map[string]func() coder.Coder{
-		"go":     coder.NewGOCoder,
-		"c":      coder.NewCCoder,
-		"cpp":    coder.NewCPPCoder,
-		"java":   coder.NewJavaCoder,
-		"python": coder.NewPythonCoder,
+	coders := map[string]newcoder.NewCoderFunc{
+		"go":     newcoder.NewGoCoder,
+		"c":      newcoder.NewCCoder,
+		"cpp":    newcoder.NewCppCoder,
+		"java":   newcoder.NewJavaCoder,
+		"python": newcoder.NewPyCoder,
 	}
 	return &App{
 		sandboxPool: sandbox.NewSandboxPool(10),
@@ -33,27 +35,27 @@ func (a *App) Run() {
 	a.server.POST("/run", func(c *gin.Context) {
 		req := new(model.CodeRequest)
 		if err := c.ShouldBindJSON(req); err != nil {
-			c.JSON(400, &model.CodeResponse{
+			c.JSON(400, &model.CodeResponse[any]{
 				Code: 400,
 				Msg:  err.Error(),
 			})
 			return
 		}
-		coder := a.coders[req.Language]()
+		coder := a.coders[req.Language](req.Code)
 		defer coder.Clean()
-		sandbox, err := a.sandboxPool.GetSandbox()
-		defer a.sandboxPool.ReleaseSandbox(sandbox)
+		sandboxBuild, err := a.sandboxPool.GetSandbox()
+
 		if err != nil {
-			c.JSON(500, &model.CodeResponse{
+			c.JSON(500, &model.CodeResponse[any]{
 				Code: 500,
 				Msg:  err.Error(),
 			})
 			return
 		}
-		coder.SetSandbox(sandbox)
-		meta, err := coder.Build(req.Code)
+		meta, err := coder.Build(sandboxBuild)
+		a.sandboxPool.ReleaseSandbox(sandboxBuild)
 		if err != nil {
-			c.JSON(500, &model.CodeResponse{
+			c.JSON(500, &model.CodeResponse[any]{
 				Code: 500,
 				Msg:  err.Error(),
 			})
@@ -61,19 +63,33 @@ func (a *App) Run() {
 		}
 
 		if meta.Status != "" {
-			c.JSON(400, &model.CodeResponse{
+			c.JSON(400, &model.CodeResponse[any]{
 				Code: 400,
 				Msg:  meta.Stderr,
 			})
 			return
 		}
-		var metas []*model.CodeMETA
+
+		var metas = []model.RunMeta{}
+
+		var metac = make(chan model.RunMeta)
 		for _, stdin := range req.Stdin {
-			meta, _ = coder.Run(req.MaxTime, req.MaxMem, stdin)
+			go func() {
+				sandboxRun, _ := a.sandboxPool.GetSandbox()
+				defer a.sandboxPool.ReleaseSandbox(sandboxRun)
+				err := coder.Run(sandboxRun, stdin, req.MaxTime, req.MaxMem, metac)
+				if err != nil {
+					fmt.Println(err)
+				}
+			}()
+		}
+
+		for i := 0; i < len(req.Stdin); i++ {
+			meta := <-metac
 			metas = append(metas, meta)
 		}
 
-		c.JSON(200, &model.CodeResponse{
+		c.JSON(200, &model.CodeResponse[model.RunMeta]{
 			Code: 200,
 			Meta: metas,
 		})
