@@ -7,7 +7,7 @@ import (
 
 const codeStorageFolder string = "/root/project/sandbox/running"
 
-type NewCoderFunc func (cppCode string) Coder
+type NewCoderFunc func(cppCode string) Coder
 
 type Coder interface {
 	Build(sandbox *sandbox.Sandbox) (*model.BuildMeta, error)
