@@ -15,8 +15,9 @@ type App struct {
 	server      *gin.Engine
 }
 
-func New(*sandbox.SandboxPool) *App {
-	server := gin.Default()
+func New(sandboxPool *sandbox.SandboxPool) *App {
+	// gin.SetMode(gin.ReleaseMode)
+	server := gin.New()
 	coders := map[string]newcoder.NewCoderFunc{
 		"go":     newcoder.NewGoCoder,
 		"c":      newcoder.NewCCoder,
@@ -25,17 +26,17 @@ func New(*sandbox.SandboxPool) *App {
 		"python": newcoder.NewPyCoder,
 	}
 	return &App{
-		sandboxPool: sandbox.NewSandboxPool(10),
+		sandboxPool: sandboxPool,
 		coders:      coders,
 		server:      server,
 	}
 }
 
-func (a *App) Run() {
+func (a *App) Run(port string) {
 	a.server.POST("/run", func(c *gin.Context) {
 		req := new(model.CodeRequest)
 		if err := c.ShouldBindJSON(req); err != nil {
-			c.JSON(400, &model.CodeResponse[any]{
+			c.JSON(200, &model.CodeResponse[any]{
 				Code: 400,
 				Msg:  err.Error(),
 			})
@@ -46,7 +47,7 @@ func (a *App) Run() {
 		sandboxBuild, err := a.sandboxPool.GetSandbox()
 
 		if err != nil {
-			c.JSON(500, &model.CodeResponse[any]{
+			c.JSON(200, &model.CodeResponse[any]{
 				Code: 500,
 				Msg:  err.Error(),
 			})
@@ -55,7 +56,7 @@ func (a *App) Run() {
 		meta, err := coder.Build(sandboxBuild)
 		a.sandboxPool.ReleaseSandbox(sandboxBuild)
 		if err != nil {
-			c.JSON(500, &model.CodeResponse[any]{
+			c.JSON(200, &model.CodeResponse[any]{
 				Code: 500,
 				Msg:  err.Error(),
 			})
@@ -63,9 +64,10 @@ func (a *App) Run() {
 		}
 
 		if meta.Status != "" {
-			c.JSON(400, &model.CodeResponse[any]{
+			c.JSON(200, &model.CodeResponse[model.BuildMeta]{
 				Code: 400,
-				Msg:  meta.Stderr,
+				Msg:  "Build Error",
+				Meta: []model.BuildMeta{*meta},
 			})
 			return
 		}
@@ -95,5 +97,5 @@ func (a *App) Run() {
 		})
 
 	})
-	a.server.Run(":6758")
+	a.server.Run(":" + port)
 }

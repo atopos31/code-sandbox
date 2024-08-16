@@ -5,7 +5,7 @@ import (
 	"github.com/atopos31/code-sandbox/pkg/model"
 )
 
-const codeStorageFolder string = "/root/project/sandbox/running"
+const codeStorageFolder string = "/sandbox/running"
 
 type NewCoderFunc func(cppCode string) Coder
 

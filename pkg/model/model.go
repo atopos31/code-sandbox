@@ -50,7 +50,7 @@ func NewBuildMeta(errPath string, metaPath string) *BuildMeta {
 	buildMeta := new(BuildMeta)
 	data, err := os.ReadFile(errPath)
 	if err != nil {
-		buildMeta.Stderr = "err: read buildErrPath failed"
+		buildMeta.Stderr = "err: read buildErrPath failed" + err.Error()
 	} else {
 		buildMeta.Stderr = string(data)
 	}

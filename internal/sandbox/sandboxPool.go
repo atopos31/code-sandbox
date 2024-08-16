@@ -49,7 +49,6 @@ func (s *SandboxPool) ReleaseSandbox(sandbox *Sandbox) {
 	defer s.mu.Unlock()
 
 	if len(s.sandboxes) < s.maxSize {
-		fmt.Printf("relase%d\n", sandbox.ID)
 		s.sandboxes[sandbox.ID] = sandbox
 	}
 	s.cond.Signal()
