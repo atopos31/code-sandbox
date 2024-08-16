@@ -5,8 +5,8 @@ Sandboxes using [isolate](https://github.com/ioi/isolate).
 
 Now supports c/c++/go/python/java.
 
-## TODO
-Docker image building.
+## RUN
+Use makefile to build and run in docker.
 
 **Request sample:**
 
