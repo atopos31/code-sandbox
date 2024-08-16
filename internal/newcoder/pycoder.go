@@ -57,7 +57,7 @@ func (c *PyCoder) Build(sandbox *sandbox.Sandbox) (*model.BuildMeta, error) {
 		"--wait",
 		"--run",
 		"--",
-		"/usr/bin/python3",
+		"/usr/bin/python3.8",
 		"-m",
 		"compileall",
 		c.codePath,
@@ -100,7 +100,7 @@ func (c *PyCoder) Run(sandbox *sandbox.Sandbox, stdin string, MaxTime float64, M
 		"--wait",
 		"--run",
 		"--",
-		"/usr/bin/python3",
+		"/usr/bin/python3.8",
 		c.binPath,
 	)
 	err := cmd.Start()

@@ -72,9 +72,7 @@ func (c *GoCoder) Build(sandbox *sandbox.Sandbox) (*model.BuildMeta, error) {
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
-	if err := cmd.Wait(); err != nil {
-		return nil, err
-	}
+	cmd.Wait()
 
 	buildMeta := model.NewBuildMeta(c.buildErrPath, c.buildMetaPath)
 
